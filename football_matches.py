@@ -36,6 +36,7 @@ def show_teams(data):
     except:
         print('Unknown Error')
     input()
+
 def show_matches(data):
     try:
         for match in range(len(data)):
@@ -49,14 +50,58 @@ def show_matches(data):
         print('Unknown error')
     finally:
         input()
+
+def show_matches_team(data, team):
+    try:
+        team_away = 0
+        team_home = 0
+        team_win = 0
+        team_draw = 0
+        team_lose = 0
+        for match in range(len(data)):
+            if data[match+1]['Home'] == team or data[match+1]['Away'] == team:
+                match_date = data[match+1]['Date']
+                match_home = data[match+1]['Home']
+                match_away = data[match+1]['Away']
+                match_hg = data[match+1]['HG']
+                match_ag = data[match+1]['AG']
+                print('Date: {} -> {} {} x {} {}'.format(match_date, match_home, match_hg, match_ag, match_away))
+                if match_home == team:
+                    team_home += 1
+                    if match_hg > match_ag:
+                        team_win += 1
+                    elif match_hg < match_ag:
+                        team_lose += 1
+                    elif match_hg == match_ag:
+                        team_draw += 1
+                elif match_away == team:
+                    team_away += 1
+                    if match_hg > match_ag:
+                        team_lose += 1
+                    elif match_hg < match_ag:
+                        team_win += 1
+                    elif match_hg == match_ag:
+                        team_draw += 1
+        print('--- Sumary ---')
+        print('Matches at home: ', team_home)
+        print('Matchas Away   : ', team_away)
+        print('Wins           : ', team_win)
+        print('Draws          : ', team_draw)
+        print('Loses          : ', team_lose)
+        print('Total Points   : ', (team_win*3)+(team_draw))
+
+    except:
+        print('Unknown error')
+    finally:
+        input()
+
 def print_menu():
     print('------------------------------------------')
     print('1 - Show all matches')
     print('2 - Show all teams')
+    print('3 - Matches for team')
     print('E - End program')
     print('------------------------------------------')
-
-
 
 # Preparing the Environment
 mydata = open_csv_file('2000-01.csv', 'r')
@@ -70,7 +115,8 @@ while True:
     elif option == '2':
         show_teams(myteams)
     elif option== '3' or option == '4':
-        pass
+        myteam = input('Choose the team: ')
+        show_matches_team(mymatches, myteam)
     elif option == '5':
         pass
     elif option == 'E' or option == 'e':
