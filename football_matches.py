@@ -2,7 +2,6 @@
 # Save it on a DICT
 # And present it as you wish
 
-import time
 def open_csv_file(file, mode):
     try:
         with open(file, mode) as openfile:
