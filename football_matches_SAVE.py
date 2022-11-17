@@ -2,8 +2,7 @@
 # Save it on a DICT
 # And present it as you wish
 
-stands = {}
-
+import pdb; pdb.set_trace()
 
 def open_csv_file(file, mode):
     try:
@@ -19,8 +18,17 @@ def open_csv_file(file, mode):
 def import_data(data):
     try:
         season = {}
+        stands = {}
         teams = {''}
         counter = 1
+        wins = 0
+        draws = 0
+        loses = 0
+        points = 0
+        new_wins = 0
+        new_draws = 0
+        new_loses = 0
+        new_points = 0
         for match in data:
             item = match.strip().split(',')
             season[counter] = {'Date': item[1], 'Home': item[2], 'Away': item[3], 'HG': item[4], 'AG': item[5]}
@@ -28,17 +36,38 @@ def import_data(data):
             teams.add(item[3])
             counter += 1
             if item[4] > item[5]:
-                import_stands(item[2], 3, 1, 0, 0)
-                import_stands(item[3], 0, 0, 0, 1)
-            elif item[4] < item[5]:
-                import_stands(item[2], 0, 0, 0, 1)
-                import_stands(item[3], 3, 1, 0, 0)
+                if not stands[item[2]]:
+                    new_wins = wins + 1
+                    new_draws = draws
+                    new_loses = loses
+                    new_points = points
+                else:
+                    new_wins = stands[item[2]]['wins'] + wins + 1
+                    new_points = stands[item[2]]['points'] + points + 3
             elif item[4] == item[5]:
-                import_stands(item[2], 1, 0, 1, 0)
-                import_stands(item[3], 1, 0, 1, 0)
-        stands.pop('HomeTeam')
-        stands.pop('AwayTeam')
+                if stands[item[2]]:
+                    new_draws = stands[item[2]]['draws'] + draws + 1
+                    new_points = stands[item[2]]['points'] + points + 1
+                else:
+                    new_wins = wins
+                    new_draws = draws + 1
+                    new_loses = loses
+                    new_points = points
+            elif item[4] < item[5]:
+                if not stands[item[2]]:
+                    new_wins = wins
+                    new_draws = draws
+                    new_loses = loses + 1
+                    new_points = points
+                else:
+                    new_wins = stands[item[2]]['loses'] + loses + 1
 
+            stands[item[2]]['wins'] = new_wins
+            stands[item[2]]['draws'] = new_draws
+            stands[item[2]]['loses'] = new_loses
+            stands[item[2]]['points'] = new_points
+        teams.remove('')
+        print(stands)
         return season, teams
     except:
         print('Unknown error')
@@ -51,21 +80,6 @@ def show_teams(data):
     except:
         print('Unknown Error')
     input()
-
-
-def import_stands(team, points, wins, draws, loses):
-    try:
-        n_points = stands[team]['points'] + points
-        n_wins = stands[team]['wins'] + wins
-        n_draws = stands[team]['draws'] + draws
-        n_loses = stands[team]['loses'] + loses
-    except:
-        n_points = points
-        n_wins = wins
-        n_draws = draws
-        n_loses = loses
-    finally:
-        stands[team] = {'points': n_points, 'wins': n_wins, 'draws': n_draws, 'loses': n_loses}
 
 
 def show_matches(data):
@@ -83,18 +97,13 @@ def show_matches(data):
         input()
 
 
-def show_stands():
+def show_stands(stands):
     try:
-        sorted_stands = sorted(stands.items(), key=lambda x: x[1]['points'], reverse=True)
-        f_stands = dict(sorted_stands)
-        print('{:15s} :  {:2s} -  {:2s} - {:2s} - {:2s}'.format('Team', 'P', 'W', 'D', 'L'))
-        for stand in f_stands:
-            print('{:15s} : {:3d} - {:3d} - {:2d} - {:2d}'.format(stand, f_stands[stand]['points'],
-                                                                  f_stands[stand]['wins'], f_stands[stand]['draws'],
-                                                                  f_stands[stand]['loses']))
-    except Exception as error:
+        for stand in stands:
+            # print('Team : {} - P{} - W{} - D{} - L{}'.format(stand[]))
+            print(stand)
+    except:
         print('Unknown Error')
-        print(error)
 
 
 def show_matches_team(data, team):
@@ -138,7 +147,7 @@ while True:
         myteam = input('Choose the team: ')
         show_matches_team(mymatches, myteam)
     elif option == '4':
-        show_stands()
+        show_stands(mystands)
     elif option == 'E' or option == 'e':
         print('Finishing...')
         break
