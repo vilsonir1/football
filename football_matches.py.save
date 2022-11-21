@@ -1,0 +1,150 @@
+# This script, opens a CSV file with football data
+# Save it on a DICT
+# And present it as you wish
+
+stands = {}
+
+
+def open_csv_file(file, mode):
+    try:
+        with open(file, mode) as openfile:
+            line = openfile.readlines()
+            return line
+    except FileNotFoundError:
+        print('File Not Found')
+    except:
+        print('Unknown error')
+
+
+def import_data(data):
+    try:
+        season = {}
+        teams = {''}
+        counter = 1
+        for match in data:
+            item = match.strip().split(',')
+            if counter > 1:
+                season[counter] = {'Date': item[1], 'Home': item[2], 'Away': item[3], 'HG': item[4], 'AG': item[5]}
+                teams.add(item[2])
+                teams.add(item[3])
+                if item[4] > item[5]:
+                    import_stands(item[2], 3, 1, 0, 0, int(item[4]), int(item[5]))
+                    import_stands(item[3], 0, 0, 0, 1, int(item[4]), int(item[5]))
+                elif item[4] < item[5]:
+                    import_stands(item[2], 0, 0, 0, 1, int(item[4]), int(item[5]))
+                    import_stands(item[3], 3, 1, 0, 0, int(item[4]), int(item[5]))
+                elif item[4] == item[5]:
+                    import_stands(item[2], 1, 0, 1, 0, int(item[4]), int(item[5]))
+                    import_stands(item[3], 1, 0, 1, 0, int(item[4]), int(item[5]))
+            counter += 1
+        return season, teams
+    except Exception as error:
+        print(error)
+
+
+def show_teams(data):
+    try:
+        for item in data:
+            print(item)
+    except:
+        print('Unknown Error')
+    input()
+
+
+def import_stands(team, points, wins, draws, loses, hg, ag):
+    try:
+        n_points = stands[team]['points'] + points
+        n_wins = stands[team]['wins'] + wins
+        n_draws = stands[team]['draws'] + draws
+        n_loses = stands[team]['loses'] + loses
+        n_hg = stands[team]['hg'] + hg
+        n_ag = stands[team]['ag'] + ag
+    except:
+        n_points = points
+        n_wins = wins
+        n_draws = draws
+        n_loses = loses
+        n_hg = hg
+        n_ag = ag
+    finally:
+        stands[team] = {'points': n_points, 'wins': n_wins, 'draws': n_draws, 'loses': n_loses, 'hg': n_hg, 'ag': n_ag }
+
+
+def show_matches(data):
+    try:
+        for match in range(len(data)):
+            match_date = data[match + 1]['Date']
+            match_home = data[match + 1]['Home']
+            match_away = data[match + 1]['Away']
+            match_hg = data[match + 1]['HG']
+            match_ag = data[match + 1]['AG']
+            print('Date: {} -> {} {} x {} {}'.format(match_date, match_home, match_hg, match_ag, match_away))
+    except:
+        print('Unknown error')
+    finally:
+        input()
+
+
+def show_stands():
+    try:
+        print(stands)
+        sorted_stands = sorted(stands.items(), key=lambda x: x[1]['points'], reverse=True)
+        f_stands = dict(sorted_stands)
+        print('{:15s} :  {:2s} -  {:2s} - {:2s} - {:2s} -  {:3s} - {:3s}'.format('Team', 'P', 'W', 'D', 'L', 'HG', 'AG'))
+        for stand in f_stands:
+            print('{:15s} : {:3d} - {:3d} - {:2d} - {:2d} - {:3d} - {:3d}'.format(stand, f_stands[stand]['points'],
+                                                                  f_stands[stand]['wins'], f_stands[stand]['draws'],
+                                                                  f_stands[stand]['loses'], f_stands[stand]['hg'],
+                                                                  f_stands[stand]['ag']))
+    except Exception as error:
+        print('Unknown Error')
+        print(error)
+
+
+def show_matches_team(data, team):
+    try:
+        for match in range(len(data)):
+            if data[match + 1]['Home'] == team or data[match + 1]['Away'] == team:
+                match_date = data[match + 1]['Date']
+                match_home = data[match + 1]['Home']
+                match_away = data[match + 1]['Away']
+                match_hg = data[match + 1]['HG']
+                match_ag = data[match + 1]['AG']
+                print('Date: {} -> {} {} x {} {}'.format(match_date, match_home, match_hg, match_ag, match_away))
+    except:
+        print('Unknown error')
+    finally:
+        input()
+
+
+def print_menu():
+    print('------------------------------------------')
+    print('1 - Show all matches')
+    print('2 - Show all teams')
+    print('3 - Matches for team')
+    print('4 - Stands')
+    print('E - End program')
+    print('------------------------------------------')
+
+
+# Preparing the Environment
+mydata = open_csv_file('2000-01.csv', 'r')
+mymatches, myteams = import_data(mydata)
+
+while True:
+    print_menu()
+    option = input('Choose one option: ')
+    if option == '1':
+        show_matches(mymatches)
+    elif option == '2':
+        show_teams(myteams)
+    elif option == '3':
+        myteam = input('Choose the team: ')
+        show_matches_team(mymatches, myteam)
+    elif option == '4':
+        show_stands()
+    elif option == 'E' or option == 'e':
+        print('Finishing...')
+        break
+    else:
+        print('Invalid Option')
